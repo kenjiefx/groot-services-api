@@ -270,7 +270,16 @@ try {
 
     }
 
-
+    $token = new Token();
+    $token->payload([
+        'userId' => $user['userId'],
+        'publicKey' => $request->payload()->publicKey,
+        'for' => 'general',
+        'role' => 'tenant user',
+        'permissions' => 'WEB',
+        'status' => 'ACTIVE'
+    ]);
+    $token->create();
 
     Response::transmit([
         'code' => 201,
@@ -278,7 +287,14 @@ try {
             'status'=>'201',
             'message' => 'New user created',
             'userId' => $user['userId'],
-            'activationKey' => $user['activationKey']
+            'activationKey' => $user['activationKey'],
+            'token' => $token->get(),
+            'user' => [
+              'firstName'=>$request->payload()->firstName,
+              'lastName'=>$request->payload()->lastName,
+              'username'=>$request->payload()->username,
+              'profilePhoto'=>null
+            ]
         ]
     ]);
 

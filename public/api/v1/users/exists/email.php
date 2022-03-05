@@ -38,7 +38,6 @@ try {
             FROM m_glyf_user u
             WHERE u.tenantId IN (SELECT tenantId FROM m_glyf_tnt WHERE publicKey = :publicKey)
             AND u.email = :email
-            OR u.username = :username
         "
     ];
 
@@ -62,11 +61,7 @@ try {
         ),
         ':email' => trim(TypeOf::email(
             'User Email',
-            $request->query()->email ?? 'unknown')
-        ),
-        ':username' => trim(TypeOf::alphanum(
-            'Username',
-            $request->query()->username ?? 'unknown')
+            $request->query()->email)
         )
     ]);
     $user = $query->get();
