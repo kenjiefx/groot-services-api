@@ -7,11 +7,6 @@
 
 declare(strict_types=1);
 
-# Error displaying, has to be removed on production
-ini_set('error_reporting','E_ALL');
-ini_set( 'display_errors','1');
-error_reporting(E_ALL ^ E_STRICT);
-
 # Common libraries
 use \core\http\Request;
 use \core\http\Response;
@@ -39,7 +34,8 @@ try {
     # Declare all your database queries here
     $queries = [
         "get post data" => "
-            SELECT postId, postTitle, postBody, createdAt, visibility, userId,
+            SELECT p.postId, p.postTitle, p.postBody, p.createdAt, p.visibility, p.userId, u.username,
+            f.firstName, f.lastName, f.profilePhoto,
                 (SELECT COUNT(reviewId) FROM m_glyf_reviews
                      WHERE reviewFor = :postId
                      AND status = 'ACTIVE'
@@ -54,10 +50,12 @@ try {
                      AND status = 'ACTIVE'
                      LIMIT 1
                 ) as hasRequesterReviewed
-            FROM m_glyf_posts
-            WHERE postId = :postId
-            AND status = 'ACTIVE'
-            AND tenantId IN (SELECT tenantId FROM m_glyf_tnt WHERE publicKey = :publicKey)
+            FROM m_glyf_posts p
+            LEFT JOIN m_glyf_user u ON u.userId = p.userId
+            LEFT JOIN s_glyf_profile f ON f.userId = p.userId
+            WHERE p.postId = :postId
+            AND p.status = 'ACTIVE'
+            AND p.tenantId IN (SELECT tenantId FROM m_glyf_tnt WHERE publicKey = :publicKey)
         ",
         "get post reviews" => "
             SELECT r.reviewId, r.reviewerId, r.title, r.content, r.score, r.createdAt, u.username, p.firstName, p.lastName, p.profilePhoto
@@ -69,6 +67,12 @@ try {
             WHERE r.reviewFor = :postId
             AND r.status = 'ACTIVE'
             AND r.tenantId IN (SELECT tenantId FROM m_glyf_tnt WHERE publicKey = :publicKey)
+        ",
+        "get user reviews bottomline" => "
+            SELECT COUNT(reviewFor) as totalReviews, SUM(score) as totalScore
+            FROM m_glyf_reviews r
+            WHERE r.reviewFor IN (SELECT postId FROM m_glyf_posts WHERE userId = :userId)
+            AND r.status = 'ACTIVE'
         "
     ];
 
@@ -130,6 +134,14 @@ try {
 
     }
 
+    /**
+     * ===================== QUERY =======================
+     * Get post data according to the post ID
+     * NOTE: UserID is passed as one of the parameters,
+     * but it is only used to determine whether the
+     * requester has reviewed this post or not
+     * ===================================================
+     */
     $query = new PDOQueryController(
         $queries['get post data']
     );
@@ -177,6 +189,31 @@ try {
         }
     }
 
+    /**
+     * ================== CHECKPOINT ===================
+     * Tells whether the owner of this post is the same
+     * user as with the one who requested to get this post
+     * data
+     * =================================================
+     */
+    $ownsThisPost = false;
+    if ($post['userId']===$requester['userId']) {
+        $ownsThisPost = true;
+    }
+
+    $query = new PDOQueryController(
+        $queries['get user reviews bottomline']
+    );
+    $query->prepare([
+        ':userId' => $post['userId']
+    ]);
+    $userBottomline = $query->get();
+
+    $userAverageScore = 0;
+    if ($userBottomline['totalScore']>0) {
+        $userAverageScore = $userBottomline['totalScore'] / $userBottomline['totalReviews'];
+    }
+
     $query = new PDOQueryController(
         $queries['get post reviews']
     );
@@ -194,6 +231,16 @@ try {
             'title' =>$post['postTitle'],
             'body' => $post['postBody'],
             'createdAt' => $post['createdAt'],
+            'user' => [
+                'username' => $post['username'],
+                'firstName' => $post['firstName'],
+                'lastName' => $post['lastName'],
+                'profilePhoto' => $post['profilePhoto'],
+                'bottomLine' => [
+                    'totalReviews' => $userBottomline['totalReviews'],
+                    'averageScore' => $userAverageScore
+                ]
+            ],
             'bottomLine' => [
                 'totalReviews' => $post['totalReviewCount'],
                 'totalReviewScore' => $post['totalReviewScore']
@@ -201,7 +248,8 @@ try {
             'reviews' => $reviews,
             'requester' => [
                 'type' => $requester['type'],
-                'hasReviewed' => $post['hasRequesterReviewed']
+                'hasReviewed' => $post['hasRequesterReviewed'],
+                'ownsThisPost' => $ownsThisPost
             ]
         ]
     ]);

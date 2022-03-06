@@ -78,6 +78,7 @@ try {
             AND p.visibility > :minVisibilityScore
             AND p.tenantId IN (SELECT tenantId FROM m_glyf_tnt WHERE publicKey = :publicKey)
             AND p.status = 'ACTIVE'
+            ORDER BY p.createdAt DESC
         ",
         "get user reviews bottomline" => "
             SELECT COUNT(reviewFor) as totalReviews, SUM(score) as totalScore
