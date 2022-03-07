@@ -57,7 +57,7 @@ class Token extends Validator {
     public function create()
     {
         $generate             = new Generator();
-        $this->payload['exp'] = ((new \DateTime())->modify('+59 minutes')->getTimestamp());
+        $this->payload['exp'] = ((new \DateTime())->modify('+10 minutes')->getTimestamp());
         $this->token          = $generate->setPayload($this->payload)->generateToken();
         return $this->token;
     }
