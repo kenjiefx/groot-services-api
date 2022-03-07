@@ -61,7 +61,7 @@ try {
             AND p.status = 'ACTIVE'
         ",
         "get user posts with reviews" => "
-            SELECT p.postId, p.postTitle, p.postBody, p.createdAt, p.status, p.visibility,
+            SELECT p.postId, p.postTitle, p.postBody, p.createdAt, p.status, p.visibility, i.src,
                 (SELECT COUNT(reviewFor) FROM m_glyf_reviews
                     WHERE reviewFor = p.postId
                     AND status = 'ACTIVE'
@@ -73,6 +73,7 @@ try {
                     AND recordType = 'tenant.user.post.review'
                 ),0) as totalReviewsScore
             FROM m_glyf_posts p
+            LEFT JOIN s_glyf_post_img i ON i.postId = p.postId
             WHERE p.userId = :userId
             AND p.recordType = 'tenant.user.post'
             AND p.visibility > :minVisibilityScore

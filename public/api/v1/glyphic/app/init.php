@@ -156,6 +156,23 @@ try {
                 recordType VARCHAR(32) NOT NULL
             );
         ",
+        "sub_post_images" => "
+            CREATE TABLE s_glyf_post_img (
+                id INT(12) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                postId VARCHAR(32) NOT NULL,
+                imageId VARCHAR(32) NOT NULL,
+                visibility INT(2) NOT NULL,
+                src TEXT NOT NULL,
+                alt TEXT,
+                tags VARCHAR(64),
+                description TEXT,
+                createdAt VARCHAR(32) NOT NULL,
+                updatedAt VARCHAR(32),
+                status VARCHAR(32) NOT NULL,
+                tenantId VARCHAR(32) NOT NULL,
+                recordType VARCHAR(32) NOT NULL
+            );
+        ",
         "sub_post_comment"=>"
             CREATE TABLE s_glyf_post_cmt (
                 id INT(12) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
