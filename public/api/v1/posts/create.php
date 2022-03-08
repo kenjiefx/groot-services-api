@@ -38,6 +38,12 @@ try {
             (postId, userId, postTitle, visibility, postBody, createdAt, updatedAt, status, tenantId, recordType)
             VALUES
             (:postId, :userId, :postTitle, :visibility, :postBody, :createdAt, :updatedAt, 'ACTIVE', (SELECT tenantId FROM m_glyf_tnt WHERE publicKey = :publicKey), 'tenant.user.post')
+        ",
+        "create new post image" => "
+            INSERT INTO s_glyf_post_img
+            (postId, imageId, visibility, src, alt, tags, description, createdAt, updatedAt, status, tenantId, recordType)
+            VALUES
+            (:postId, :imageId, :visibility, :src, :alt, :tags, :description, :createdAt, :updatedAt, :status, (SELECT tenantId FROM m_glyf_tnt WHERE publicKey = :publicKey), 'tenant.user.post.image')
         "
     ];
 
@@ -124,6 +130,31 @@ try {
         ':updatedAt' => TimeStamp::now()
     ];
 
+    # Optional parameter: Post with image
+    if (isset($request->payload()->photo)) {
+      $image = [
+          ':postId' => $post[':postId'],
+          ':imageId' => UniqueId::create32bitKey(UniqueId::BETANUMERIC),
+          ':visibility' => 'public',
+          ':src' => TypeOf::url(
+            'Post Image URL',
+            $request->payload()->photo
+          ),
+          ':alt' => null,
+          ':tags' => null,
+          ':description' => null,
+          ':createdAt' => TimeStamp::now(),
+          ':updatedAt' => TimeStamp::now(),
+          ':status' => 'ACTIVE',
+          ':publicKey' => $requester['publicKey']
+      ];
+      $imageQuery = new PDOQueryController(
+          $queries['create new post image']
+      );
+      $imageQuery->prepare($image);
+      $imageQuery->post();
+    }
+
     $query = new PDOQueryController(
         $queries['create new post']
     );
@@ -153,9 +184,9 @@ try {
     }
     Response::transmit([
         'code' => 400,
-        'exception' => 'Unhandled Exception'
+        // 'exception' => 'Unhandled Exception'
 
         # Allows you to see the exact error message passed on the throw statement
-        //'exception'=>$e->getMessage()
+         'exception'=>$e->getMessage()
     ]);
 }

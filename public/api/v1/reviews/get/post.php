@@ -34,7 +34,7 @@ try {
     # Declare all your database queries here
     $queries = [
         "get post data" => "
-            SELECT p.postId, p.postTitle, p.postBody, p.createdAt, p.visibility, p.userId, u.username,
+            SELECT p.postId, p.postTitle, p.postBody, p.createdAt, p.visibility, p.userId, u.username, i.src,
             f.firstName, f.lastName, f.profilePhoto,
                 (SELECT COUNT(reviewId) FROM m_glyf_reviews
                      WHERE reviewFor = :postId
@@ -51,6 +51,7 @@ try {
                      LIMIT 1
                 ) as hasRequesterReviewed
             FROM m_glyf_posts p
+            LEFT JOIN s_glyf_post_img i ON i.postId = p.postId
             LEFT JOIN m_glyf_user u ON u.userId = p.userId
             LEFT JOIN s_glyf_profile f ON f.userId = p.userId
             WHERE p.postId = :postId
@@ -230,6 +231,7 @@ try {
             'id' => $post['postId'],
             'title' =>$post['postTitle'],
             'body' => $post['postBody'],
+            'src' => $post['src'],
             'createdAt' => $post['createdAt'],
             'user' => [
                 'username' => $post['username'],
