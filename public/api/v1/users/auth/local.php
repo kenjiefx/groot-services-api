@@ -37,6 +37,12 @@ $response = new Response;
 try {
 
     # Declare all your database queries here
+
+    /**
+     * @TODO It appears that the OR statement here makes logging in doable for
+     * for a user from a different public key. Needs to modify to make sure that
+     * only the user under the SPECIFIC public key can be query
+     */
     $queries = [
         "get user details" => "
             SELECT u.userId, u.password, u.status, u.role, u.permissions, p.firstName, p.lastName, p.profilePhoto, u.username

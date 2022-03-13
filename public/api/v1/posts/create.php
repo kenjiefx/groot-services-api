@@ -135,7 +135,7 @@ try {
       $image = [
           ':postId' => $post[':postId'],
           ':imageId' => UniqueId::create32bitKey(UniqueId::BETANUMERIC),
-          ':visibility' => 'public',
+          ':visibility' => $visibilityScore,
           ':src' => TypeOf::url(
             'Post Image URL',
             $request->payload()->photo
