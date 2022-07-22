@@ -17,18 +17,11 @@ use \glyphic\TimeStamp;
 use \glyphic\TypeOf;
 use \glyphic\UniqueId;
 use \tasksvc\factories\TaskFactory;
-use \tasksvc\controllers\TaskController;
 use \tasksvc\services\TaskDBService;
-
-# Error displaying, has to be removed on production
-ini_set('error_reporting','E_ALL');
-ini_set( 'display_errors','1');
-error_reporting(E_ALL ^ E_STRICT);
 
 require $_SERVER['DOCUMENT_ROOT'].'/imports.php';
 $request = new Request;
 $response = new Response;
-
 
 try {
 
@@ -36,44 +29,47 @@ try {
     RequireApiEndpoint::header();
 
     # Require API Method endpoint
-    RequireApiEndpoint::method('GET');
+    RequireApiEndpoint::method('POST');
 
-    # Require API query parameters
-    RequireApiEndpoint::query(['token','status']);
+    # Require API payload
+    RequireApiEndpoint::payload([
+        'email',
+        'todos',
+        'description',
+        'type',
+        'hasAcceptedTerms'
+    ]);
 
-    $status = Typeof::alpha('Status',$request->query()->status);
-    $page = TypeOf::integer('Page',$request->query()->page ?? 1);
+    $task = (
+        new TaskFactory([
+            'user' => [
+                'email' => $request->payload()->email
+            ],
+            'todos' => $request->payload()->todos,
+            'description' => $request->payload()->description,
+            'type' => $request->payload()->type
+        ])
+    )->create();
 
-    if ($status=='new'||$status=='completed'||$status=='pending'||$status=='rejected') {
+    $taskDb = new TaskDBService($task);
+    $taskDb->save();
 
-        # Requester validation
-        $jwt = new Token($request->query()->token);
-
-        if (!$jwt->isValid()) {
-            throw new UnauthorizedAccessException(
-                'Token provided is either expired or invalid'
-            );
-        }
-
-        $result = TaskDBService::fetchTasks($status,$page);
-        header('Content-Type: application/json');
-        echo json_encode($result);
-
-
-    } else {
-        throw new BadRequestException(
-            'Task status is invalid'
-        );
-    }
+    Response::transmit([
+        'payload' => [
+            'status'=>'200 OK',
+            'message' => 'Task created successfully',
+            'data' => $task->export()
+        ]
+    ]);
 
 } catch (\Exception $e) {
     if ($e instanceof \core\exceptions\RocketExceptionsInterface) {
         Response::transmit([
             'code' => $e->code(),
             # Provides only generic error message
-            # 'exception' => 'RocketExceptionsInterface::'.$e->exception(),
+            'exception' => 'RocketExceptionsInterface::'.$e->exception(),
             # Allows you to see the exact error message passed on the throw statement
-            'exception'=>$e->getMessage()
+            # 'exception'=>$e->getMessage()
         ]);
         exit();
     }

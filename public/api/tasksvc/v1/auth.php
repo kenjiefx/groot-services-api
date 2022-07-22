@@ -54,9 +54,7 @@ try {
     }
 
     $token = new Token();
-    $token->payload([
-        'requester'=>'root'
-    ]);
+    $token->payload(['requester'=>'root']);
     $token->create();
 
     Response::transmit([

@@ -16,14 +16,13 @@ use \glyphic\RequireApiEndpoint;
 use \glyphic\TimeStamp;
 use \glyphic\TypeOf;
 use \glyphic\UniqueId;
-use \tasksvc\TaskModel;
-use \tasksvc\TodoModel;
-use \tasksvc\TaskDB;
+use \tasksvc\factories\TaskFactory;
+use \tasksvc\controllers\TaskController;
+use \tasksvc\services\TaskDBService;
 
 require $_SERVER['DOCUMENT_ROOT'].'/imports.php';
 $request = new Request;
 $response = new Response;
-
 
 try {
 
@@ -31,24 +30,17 @@ try {
     RequireApiEndpoint::header();
 
     # Require API Method endpoint
-    RequireApiEndpoint::method('POST');
-
-    # Require API query parameters
-    RequireApiEndpoint::query(['token']);
+    RequireApiEndpoint::method('PUT');
 
     # Require API payload
     RequireApiEndpoint::payload([
-        'email',
-        'todos',
-        'description',
-        'type',
-        'hasAcceptedTerms'
+        'token',
+        'taskid',
+        'comment'
     ]);
 
-
-
     # Requester validation
-    $jwt = new Token($request->query()->token);
+    $jwt = new Token($request->payload()->token);
 
     if (!$jwt->isValid()) {
         throw new UnauthorizedAccessException(
@@ -56,54 +48,44 @@ try {
         );
     }
 
-    $task = new TaskModel();
-    $task->setEmail($request->payload()->email);
-    $task->setDescription($request->payload()->description);
-    $task->setType($request->payload()->type);
-    $task->setTerms($request->payload()->hasAcceptedTerms);
+    $task = TaskDBService::getTask(
+        'all',
+        TypeOf::all('Task Id',$request->payload()->taskid,'NOT EMPTY')
+    );
 
-    if (!is_array($request->payload()->todos)) {
-        throw new BadRequestException(
-            'Todo list must be type of array'
-        );
-    }
+    $controller = new TaskController($task);
 
-    foreach ($request->payload()->todos as $todoItem) {
+    $controller->rejectTask(
+        TypeOf::all('Moderation comment',$request->payload()->comment,'NULLABLE')
+    );
 
-        $todo = new TodoModel();
 
-        if (!isset($todoItem->about)) {
-            throw new BadRequestException(
-                'Todo item requires about field'
-            );
-        }
+    $taskDb = new TaskDBService($task);
+    $taskDb->save();
 
-        $todo->setAbout($todoItem->about);
-
-        $task->addTodo($todo);
-
-    }
-
-    TaskDB::save($task,'new','new');
+    Response::transmit([
+        'payload' => [
+            'status'=>'200 OK',
+            'message' => 'Task has been rejected',
+            'data' => []
+        ]
+    ]);
 
 } catch (\Exception $e) {
     if ($e instanceof \core\exceptions\RocketExceptionsInterface) {
         Response::transmit([
             'code' => $e->code(),
-
             # Provides only generic error message
-            //'exception' => 'RocketExceptionsInterface::'.$e->exception(),
-
+            'exception' => 'RocketExceptionsInterface::'.$e->exception(),
             # Allows you to see the exact error message passed on the throw statement
-            'exception'=>$e->getMessage()
+            # 'exception'=>$e->getMessage()
         ]);
         exit();
     }
     Response::transmit([
         'code' => 400,
         'exception' => 'Unhandled Exception'
-
         # Allows you to see the exact error message passed on the throw statement
-        //'exception'=>$e->getMessage()
+        # 'exception'=>$e->getMessage()
     ]);
 }

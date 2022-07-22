@@ -16,9 +16,9 @@ use \glyphic\RequireApiEndpoint;
 use \glyphic\TimeStamp;
 use \glyphic\TypeOf;
 use \glyphic\UniqueId;
-use \tasksvc\TaskModel;
-use \tasksvc\TodoModel;
-use \tasksvc\TaskDB;
+use \tasksvc\factories\TaskFactory;
+use \tasksvc\controllers\TaskController;
+use \tasksvc\services\TaskDBService;
 
 require $_SERVER['DOCUMENT_ROOT'].'/imports.php';
 $request = new Request;
@@ -34,10 +34,10 @@ try {
     RequireApiEndpoint::method('PUT');
 
     # Require API query parameters
-    RequireApiEndpoint::query(['token','id','todo']);
+    RequireApiEndpoint::payload(['token','taskid','todoid']);
 
     # Requester validation
-    $jwt = new Token($request->query()->token);
+    $jwt = new Token($request->payload()->token);
 
     if (!$jwt->isValid()) {
         throw new UnauthorizedAccessException(
@@ -45,35 +45,18 @@ try {
         );
     }
 
-    $taskId = Typeof::all('Task Id',$request->query()->id);
-    $todoId = Typeof::alphanum('Todo Id',$request->query()->todo);
+    $task = TaskDBService::getTask(
+        'all',
+        TypeOf::all('Task Id',$request->payload()->taskid,'NOT EMPTY')
+    );
 
-    $task = TaskDB::getById($taskId);
+    $controller = new TaskController($task);
+    $controller->unCompleteTodo(
+        TypeOf::alphanum('Todo Id',$request->payload()->todoid)
+    );
 
-    if (!isset($task['todos'][$todoId])) {
-        throw new RecordNotFoundException(
-            'Todo id '.$todoId.' not found'
-        );
-    }
-
-    $oldStatus = $task['status'];
-
-    if ($task['todos'][$todoId]['status']==='pending') {
-        Response::transmit([
-            'payload' => [
-                'status'=>'200 OK',
-                'message' => 'Todo item is already pending'
-            ]
-        ]);
-        exit();
-    }
-
-    $task['todos'][$todoId]['status'] = 'pending';
-    $task['todos'][$todoId]['updatedAt'] = TimeStamp::now();
-
-    $updatedTask = TaskModel::import($task);
-
-    TaskDB::save($updatedTask,$oldStatus,$updatedTask->getStatus());
+    $taskDb = new TaskDBService($task);
+    $taskDb->save();
 
     Response::transmit([
         'payload' => [
@@ -83,25 +66,21 @@ try {
     ]);
 
 
-
 } catch (\Exception $e) {
     if ($e instanceof \core\exceptions\RocketExceptionsInterface) {
         Response::transmit([
             'code' => $e->code(),
-
             # Provides only generic error message
-            //'exception' => 'RocketExceptionsInterface::'.$e->exception(),
-
+            'exception' => 'RocketExceptionsInterface::'.$e->exception(),
             # Allows you to see the exact error message passed on the throw statement
-            'exception'=>$e->getMessage()
+            # 'exception'=>$e->getMessage()
         ]);
         exit();
     }
     Response::transmit([
         'code' => 400,
         'exception' => 'Unhandled Exception'
-
         # Allows you to see the exact error message passed on the throw statement
-        //'exception'=>$e->getMessage()
+        # 'exception'=>$e->getMessage()
     ]);
 }

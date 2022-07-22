@@ -16,14 +16,13 @@ use \glyphic\RequireApiEndpoint;
 use \glyphic\TimeStamp;
 use \glyphic\TypeOf;
 use \glyphic\UniqueId;
-use \tasksvc\TaskModel;
-use \tasksvc\TodoModel;
-use \tasksvc\TaskDB;
+use \tasksvc\factories\TaskFactory;
+use \tasksvc\controllers\TaskController;
+use \tasksvc\services\TaskDBService;
 
 require $_SERVER['DOCUMENT_ROOT'].'/imports.php';
 $request = new Request;
 $response = new Response;
-
 
 try {
 
@@ -33,8 +32,12 @@ try {
     # Require API Method endpoint
     RequireApiEndpoint::method('PUT');
 
-    # Require API query parameters
-    RequireApiEndpoint::payload(['token','id','comment']);
+    # Require API payload
+    RequireApiEndpoint::payload([
+        'token',
+        'taskid',
+        'comment'
+    ]);
 
     # Requester validation
     $jwt = new Token($request->payload()->token);
@@ -45,61 +48,44 @@ try {
         );
     }
 
-    $taskId = Typeof::all('Task Id',$request->payload()->id,'NOT EMPTY');
-    $comment = Typeof::all('Rejection comment',$request->payload()->comment,'NOT EMPTY');
+    $task = TaskDBService::getTask(
+        'all',
+        TypeOf::all('Task Id',$request->payload()->taskid,'NOT EMPTY')
+    );
 
-    $task = TaskDB::getById($taskId);
-    $task['rejection'] = [
-        'createdAt' => TimeStamp::now(),
-        'comment' => $comment
-    ];
+    $controller = new TaskController($task);
 
-    $oldStatus = $task['status'];
-    if ($task['status']==='rejected') {
-        Response::transmit([
-            'payload' => [
-                'status'=>'200 OK',
-                'message' => 'Task has been already rejected'
-            ]
-        ]);
-        exit();
-    }
+    $controller->acceptTask(
+        TypeOf::all('Moderation comment',$request->payload()->comment,'NULLABLE')
+    );
 
-    $task['status'] = 'rejected';
 
-    $updatedTask = TaskModel::import($task);
-
-    TaskDB::save($updatedTask,$oldStatus,$updatedTask->getStatus());
+    $taskDb = new TaskDBService($task);
+    $taskDb->save();
 
     Response::transmit([
         'payload' => [
             'status'=>'200 OK',
-            'message' => 'Task is successfully rejected'
+            'message' => 'Task has been accepted',
+            'data' => []
         ]
     ]);
-
-    //var_dump($updatedTask);
-
-
 
 } catch (\Exception $e) {
     if ($e instanceof \core\exceptions\RocketExceptionsInterface) {
         Response::transmit([
             'code' => $e->code(),
-
             # Provides only generic error message
-            //'exception' => 'RocketExceptionsInterface::'.$e->exception(),
-
+            'exception' => 'RocketExceptionsInterface::'.$e->exception(),
             # Allows you to see the exact error message passed on the throw statement
-            'exception'=>$e->getMessage()
+            # 'exception'=>$e->getMessage()
         ]);
         exit();
     }
     Response::transmit([
         'code' => 400,
         'exception' => 'Unhandled Exception'
-
         # Allows you to see the exact error message passed on the throw statement
-        //'exception'=>$e->getMessage()
+        # 'exception'=>$e->getMessage()
     ]);
 }
