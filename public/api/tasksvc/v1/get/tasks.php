@@ -20,11 +20,6 @@ use \tasksvc\factories\TaskFactory;
 use \tasksvc\controllers\TaskController;
 use \tasksvc\services\TaskDBService;
 
-# Error displaying, has to be removed on production
-ini_set('error_reporting','E_ALL');
-ini_set( 'display_errors','1');
-error_reporting(E_ALL ^ E_STRICT);
-
 require $_SERVER['DOCUMENT_ROOT'].'/imports.php';
 $request = new Request;
 $response = new Response;
@@ -56,8 +51,13 @@ try {
         }
 
         $result = TaskDBService::fetchTasks($status,$page);
-        header('Content-Type: application/json');
-        echo json_encode($result);
+
+        Response::transmit([
+            'payload' => [
+                'status'=>'200 OK',
+                'data' => $result
+            ]
+        ]);
 
 
     } else {
@@ -71,9 +71,9 @@ try {
         Response::transmit([
             'code' => $e->code(),
             # Provides only generic error message
-            # 'exception' => 'RocketExceptionsInterface::'.$e->exception(),
+            'exception' => 'RocketExceptionsInterface::'.$e->exception(),
             # Allows you to see the exact error message passed on the throw statement
-            'exception'=>$e->getMessage()
+            # 'exception'=>$e->getMessage()
         ]);
         exit();
     }

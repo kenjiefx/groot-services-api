@@ -99,6 +99,20 @@ class TaskDBService {
         return Self::getFromDir($path,$page);
     }
 
+    public static function fetchTasksByUser(
+        string $email,
+        int $page
+        )
+    {
+        $path = Self::userPath($email);
+        if (!file_exists($path)) {
+            throw new RecordNotFoundException(
+                'No tasks found under (email: '.$email.')'
+            );
+        }
+        return Self::getFromDir($path,$page);
+    }
+
     private static function getFromDir(
         string $path,
         int $page
@@ -142,5 +156,14 @@ class TaskDBService {
     {
         return ROOT.'/data/tasksvc/'.$status.'/';
     }
+
+    private static function userPath(
+        string $email
+        )
+    {
+        return ROOT.'/data/tasksvc/users/'.$email.'/';
+    }
+
+
 
 }
