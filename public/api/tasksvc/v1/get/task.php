@@ -34,18 +34,9 @@ try {
     RequireApiEndpoint::method('GET');
 
     # Require API query parameters
-    RequireApiEndpoint::query(['token','taskid']);
+    RequireApiEndpoint::query(['taskid']);
 
     $taskid = Typeof::all('Task ID',$request->query()->taskid,'NOT EMPTY');
-
-    # Requester validation
-    $jwt = new Token($request->query()->token);
-
-    if (!$jwt->isValid()) {
-        throw new UnauthorizedAccessException(
-            'Token provided is either expired or invalid'
-        );
-    }
 
     $task = TaskDBService::getTask('all',$taskid);
 

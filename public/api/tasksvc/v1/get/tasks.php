@@ -55,7 +55,8 @@ try {
         Response::transmit([
             'payload' => [
                 'status'=>'200 OK',
-                'data' => $result
+                'data' => $result['data'],
+                'count' => $result['count']
             ]
         ]);
 

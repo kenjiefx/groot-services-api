@@ -123,6 +123,7 @@ class TaskDBService {
         $perPage = 8;
         $pageCounter = 1;
         $result = [];
+        $counter = 0;
         foreach ($files as $file) {
             if ($file!=='.'&&$file!=='..'&&$file!=='node.txt') {
                 if ($pageCounter===$page) {
@@ -133,9 +134,13 @@ class TaskDBService {
                 if ($item===$perPage) {
                     $item = 1;
                 }
+                $counter++;
             }
         }
-        return $result;
+        return [
+            'data' => $result,
+            'count' => $counter
+        ];
     }
 
     public function indexify()

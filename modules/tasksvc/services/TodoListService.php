@@ -35,10 +35,10 @@ class TodoListService {
     {
         return [
             'about' => $todo->about,
-            'createdAt' => $todo->createdAt,
-            'updatedAt' => $todo->updatedAt,
-            'status' => $todo->status,
-            'id' => $todo->id
+            'createdAt' => $todo->createdAt ?? TimeStamp::now(),
+            'updatedAt' => $todo->updatedAt ?? TimeStamp::now(),
+            'status' => $todo->status ?? 'pending',
+            'id' => $todo->id ?? null
         ];
     }
 
