@@ -1,3 +1,5 @@
 .env
 /data/glyphic/init.txt
 /data/tasksvc
+data/yotpo/*
+!data/yotpo/node.txt
