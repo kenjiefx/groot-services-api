@@ -39,6 +39,11 @@ try {
         $request->query()->app_key
     );
 
+    header('Content-type: application/json');
+    echo file_get_contents(__dir__.'/tmp.json');
+
+    exit();
+
     # Requester validation
     $jwt = new Token($request->query()->token);
 
