@@ -31,18 +31,22 @@ try {
     # Require API payload
     RequireApiEndpoint::query([
         'token',
-        'app_key'
+        'app_key',
+        'page_info'
     ]);
 
+    /**
+     * First, we make sure that the correct data types
+     * are being requested
+     */
     $appKey = TypeOf::alphanum(
         'App Key',
         $request->query()->app_key
     );
-
-    header('Content-type: application/json');
-    echo file_get_contents(__dir__.'/tmp.json');
-
-    exit();
+    $pageInfo = TypeOf::alphanum(
+        'Page',
+        $request->query()->page_info
+    );
 
     # Requester validation
     $jwt = new Token($request->query()->token);
@@ -65,40 +69,66 @@ try {
 
     $uToken = file_get_contents($uTokenPath);
 
-    $ch = curl_init();
+    $isCached = false;
+    $cachedPath = ROOT.'/data/yotpo/cached';
+    $cachedPageInfoPath = $cachedPath.'/'.$appKey.'/catalog/'.$pageInfo.'.json';
 
-    curl_setopt_array($ch, [
-        CURLOPT_URL => 'https://api.yotpo.com/core/v3/stores/'.$appKey.'/products',
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_ENCODING => "",
-        CURLOPT_AUTOREFERER => true,
-        CURLOPT_MAXREDIRS => 10,
-        CURLOPT_TIMEOUT => 30,
-        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-        CURLOPT_CUSTOMREQUEST => 'GET',
-        CURLOPT_HTTPHEADER => [
-            'Accept: application/json',
-            'Content-Type: application/json',
-            'X-Yotpo-Token: '.$uToken
-        ]
-    ]);
 
-    $success = curl_exec($ch);
-    $error = curl_error($ch);
-
-    $result = json_decode($success,TRUE);
-
-    if (!isset($result['products'])) {
-        throw new ConfigurationErrorException(
-            'Internal Server error'
-        );
-        exit();
+    $apiUrl = 'https://api.yotpo.com/core/v3/stores/'.$appKey.'/products?limit=15';
+    if ($pageInfo!=='first') {
+        $apiUrl .= '&page_info='.$pageInfo;
     }
+
+    if (!file_exists($cachedPageInfoPath)) {
+        $ch = curl_init();
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $apiUrl,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_AUTOREFERER => true,
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'GET',
+            CURLOPT_HTTPHEADER => [
+                'Accept: application/json',
+                'Content-Type: application/json',
+                'X-Yotpo-Token: '.$uToken
+            ]
+        ]);
+        $success = curl_exec($ch);
+        $error = curl_error($ch);
+        $result = json_decode($success,TRUE);
+        if (!isset($result['products'])) {
+            throw new ConfigurationErrorException(
+                'Internal Server error'
+            );
+            exit();
+        }
+
+        # Caching the result:
+        if (!is_dir($cachedPath.'/'.$appKey)) {
+            mkdir($cachedPath.'/'.$appKey);
+        }
+
+        if (!is_dir($cachedPath.'/'.$appKey.'/catalog')) {
+            mkdir($cachedPath.'/'.$appKey.'/catalog');
+        }
+
+        file_put_contents($cachedPath.'/'.$appKey.'/catalog/'.$pageInfo.'.json',json_encode($result));
+
+    } else {
+        $result = json_decode(file_get_contents($cachedPath.'/'.$appKey.'/catalog/'.$pageInfo.'.json'),TRUE);
+        $isCached = true;
+    }
+
 
     Response::transmit([
         'payload' => [
             'status'=>'200 OK',
-            'products' => $result['products']
+            'products' => $result['products'],
+            'next' => $result['pagination']['next_page_info'],
+            'cached' => $isCached
         ]
     ]);
 
