@@ -5,7 +5,7 @@
  * NOTE: For testing purposes only!
  * DO NOT USE IN PRODUCTION
  *
- * php -S 127.0.0.1:8000 server.php if using VPN
+ * php -S 127.0.0.1:8080 server.php if using VPN
  */
 
 chdir(__dir__);

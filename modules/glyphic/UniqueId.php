@@ -10,6 +10,13 @@ class UniqueId
     public const ALPHANUMERIC = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     public const BETANUMERIC = "1234567890abcdef";
 
+    public static function createShortKey(
+        string $type = Self::NUMERIC
+        )
+    {
+        return Self::createUniqueKey(1,$type);
+    }
+
     public static function create32bitKey(
         string $type = Self::NUMERIC
         )
