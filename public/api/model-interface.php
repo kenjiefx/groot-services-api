@@ -1,14 +1,9 @@
 <?php
 
 $properties = [
-    'id' => ['visibility'=>'private','datatype'=>'string','get'=>true,'set'=>true],
-    'type' => ['visibility'=>'private','datatype'=>'string','get'=>true,'set'=>true],
-    'mobileNumber' => ['visibility'=>'private','datatype'=>'string','get'=>true,'set'=>true],
-    'telephoneNumber' => ['visibility'=>'private','datatype'=>'string','get'=>true,'set'=>true],
-    'emailAddress' => ['visibility'=>'private','datatype'=>'string','get'=>true,'set'=>true],
-    'faxNumber' => ['visibility'=>'private','datatype'=>'string','get'=>true,'set'=>true],
-    'createdAt' => ['visibility'=>'private','datatype'=>'TimeStamp','get'=>true,'set'=>true],
-    'updatedAt' => ['visibility'=>'private','datatype'=>'TimeStamp','get'=>true,'set'=>true]
+    'firstName' => ['visibility'=>'private','datatype'=>'string','get'=>true,'set'=>true],
+    'lastName' => ['visibility'=>'private','datatype'=>'string','get'=>true,'set'=>true],
+    'email' => ['visibility'=>'private','datatype'=>'string','get'=>true,'set'=>true]
 ];
 
 

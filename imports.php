@@ -14,3 +14,4 @@ define('URL',$_SERVER['REQUEST_URI']);
 
 # Requiring autoloader
 require ROOT.'/src/autoloader.php';
+require ROOT.'/src/Core/env.init.php';

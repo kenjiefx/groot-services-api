@@ -17,6 +17,7 @@ class User {
     private string $email;
     private string $password;
     private string $username;
+    private string $profilePhoto;
     private Status $status;
     private Permissions $permissions;
     private Address $address;
@@ -111,6 +112,18 @@ class User {
                 $this->username : null;
         }
         $this->username = $username;
+        return $this;
+    }
+
+    public function profilePhoto (
+        ?string $profilePhoto = null
+        )
+    {
+        if(null===$profilePhoto){
+            return (isset($this->profilePhoto)) ?
+                $this->profilePhoto : null;
+        }
+        $this->profilePhoto = $profilePhoto;
         return $this;
     }
 
