@@ -11,15 +11,18 @@ class Address
     private string $type;
     private string $street;
     private string $house;
+    private string $building;
+    private string $floor;
     private string $room;
     private string $zone;
-    private string $baranggay;
+    private string $barangay;
     private string $town;
     private string $city;
     private string $province;
     private string $region;
     private string $state;
     private string $country;
+    private string $zipcode;
     private TimeStamp $createdAt;
     private TimeStamp $updatedAt;
 
@@ -85,6 +88,30 @@ class Address
         return $this;
     }
 
+    public function building (
+        ?string $building = null
+        )
+    {
+        if(null===$building){
+            return (isset($this->building)) ?
+                $this->building : null;
+        }
+        $this->building = $building;
+        return $this;
+    }
+
+    public function floor (
+        ?string $floor = null
+        )
+    {
+        if(null===$floor){
+            return (isset($this->floor)) ?
+                $this->floor : null;
+        }
+        $this->floor = $floor;
+        return $this;
+    }
+
 
     public function room (
         ?string $room = null
@@ -112,15 +139,15 @@ class Address
     }
 
 
-    public function baranggay (
-        ?string $baranggay = null
+    public function barangay (
+        ?string $barangay = null
         )
     {
-        if(null===$baranggay){
-            return (isset($this->baranggay)) ?
-                $this->baranggay : null;
+        if(null===$barangay){
+            return (isset($this->barangay)) ?
+                $this->barangay : null;
         }
-        $this->baranggay = $baranggay;
+        $this->barangay = $barangay;
         return $this;
     }
 
@@ -199,6 +226,18 @@ class Address
                 $this->country : null;
         }
         $this->country = $country;
+        return $this;
+    }
+
+    public function zipcode (
+        ?string $zipcode = null
+        )
+    {
+        if(null===$zipcode){
+            return (isset($this->zipcode)) ?
+                $this->zipcode : null;
+        }
+        $this->zipcode = $zipcode;
         return $this;
     }
 

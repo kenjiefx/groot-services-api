@@ -52,7 +52,7 @@ class Status
         return new Status(Self::ONHOLD);
     }
 
-    public function toString()
+    public function __toString()
     {
         return $this->status;
     }

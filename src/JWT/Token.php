@@ -6,12 +6,14 @@ namespace JWT;
 use \JWT\Generator;
 use \JWT\Validator;
 use \JWT\JWTAbstract;
+use Core\Exceptions\UnauthorizedAccessException;
 
 class Token extends Validator {
 
-    private $token;
-    private $payload;
+    private ?string $token;
+    private array $payload;
     private $exp;
+    private bool $hasValidated = false;
 
     public function __construct(
         string $token = null
@@ -43,15 +45,24 @@ class Token extends Validator {
             return $this;
         }
 
+        if (!$this->hasValidated) $this->isValid();
+
         $parts = explode('.', $this->token);
         if (!isset($parts[1])) return [];
         return json_decode(base64_decode($parts[1]),TRUE);
 
     }
 
+
+
     public function isValid()
     {
-        return Validator::token($this->token);
+        $isValid = Validator::token($this->token);
+        if (!$isValid)
+            throw new UnauthorizedAccessException(
+                'Token provided is either expired or invalid'
+            );
+        return $isValid;
     }
 
     public function create()

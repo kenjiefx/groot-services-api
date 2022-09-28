@@ -15,8 +15,6 @@ try {
 
     
 
-    Response::unknown();
-
 } catch (\Exception $e) {
 
     if ($e instanceof RocketExceptionsInterface) {

@@ -3,6 +3,8 @@
 declare(strict_types=1);
 namespace Tenant\Models;
 
+use Tools\UniqueId;
+use Tenant\Models\Owner;
 use Tenant\Models\Address;
 use Tenant\Models\Contacts;
 
@@ -25,6 +27,8 @@ class Business {
         $this->id = UniqueId::create32bitKey(
             UniqueId::BETANUMERIC
         );
+        $this->address = new Address();
+        $this->contacts = new Contacts();
     }
 
 
