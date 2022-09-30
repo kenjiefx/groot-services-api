@@ -17,7 +17,7 @@ class Contacts
 
 
     public function __construct(
-        
+
         )
     {
         $this->id = UniqueId::create32bitKey(

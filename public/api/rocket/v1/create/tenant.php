@@ -31,13 +31,19 @@ try {
     $Requester  = new Requester($tokenPayload);
     $Tenant     = new Tenant();
     $Controller = new TenantController($Tenant);
+    $Controller->create();
 
-    Response::dispatch(
-        200,
-        null,
-        $Controller->create()->save()
-    );
-
+    Response::transmit([
+        'payload' => [
+            'status'=>'200 OK',
+            'message' => 'Tenant successfully created',
+            'tenant' => [
+                'id' => $Tenant->id(),
+                'publicKey' => $Tenant->publicKey(),
+                'secretKey' => $Tenant->secretKey()
+            ]
+        ]
+    ]);
 
 } catch (\Exception $e) {
 

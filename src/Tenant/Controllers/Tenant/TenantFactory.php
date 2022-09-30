@@ -34,20 +34,10 @@ class TenantFactory
         $this->Tenant->settings(
             new Settings()
         );
+        $this->Tenant->admin(null);
+        $this->Tenant->teammates(null);
+
     }
 
-    public function save()
-    {
-        $exporter = new TenantExporter(
-            $this->Tenant
-        );
-        return $exporter->export();
-    }
 
-    private function exportTenant()
-    {
-         
-    }
-
-    
 }

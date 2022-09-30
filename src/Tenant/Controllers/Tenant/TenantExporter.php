@@ -23,7 +23,9 @@ class TenantExporter
             'createdAt' => (string) $this->Tenant->createdAt(),
             'updatedAt' => (string) $this->Tenant->updatedAt(),
             'status' => (string) $this->Tenant->status(),
-            'business' => (new BusinessExporter($this->Tenant->business()))->export()
+            'business' => (new BusinessExporter($this->Tenant->business()))->export(),
+            'admin' => $this->Tenant->admin() ?? null,
+            'teammates' => $this->Tenant->teammates ?? null
         ];
     }
 }

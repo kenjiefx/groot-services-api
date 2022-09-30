@@ -7,6 +7,7 @@ use Tools\UniqueId;
 use Tenant\Models\Owner;
 use Tenant\Models\Address;
 use Tenant\Models\Contacts;
+use Tenant\Models\Industry;
 
 class Business {
 
@@ -29,6 +30,8 @@ class Business {
         );
         $this->address = new Address();
         $this->contacts = new Contacts();
+        $this->owner = new Owner();
+        $this->industry = Industry::General();
     }
 
 
