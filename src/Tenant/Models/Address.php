@@ -34,6 +34,8 @@ class Address
         $this->id = UniqueId::create32bitKey(
             UniqueId::BETANUMERIC
         );
+        $this->createdAt = TimeStamp::now();
+        $this->updatedAt = TimeStamp::now();
     }
 
 

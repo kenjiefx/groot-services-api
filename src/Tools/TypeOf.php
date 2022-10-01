@@ -150,7 +150,7 @@ class TypeOf
         return htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
     }
 
-    public static function alphanumwithspace (
+    public static function alphanumWithspace (
         string $label,
         $data,
         string $flag = null

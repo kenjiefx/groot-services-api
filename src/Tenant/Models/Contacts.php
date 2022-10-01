@@ -3,6 +3,7 @@
 namespace Tenant\Models;
 
 use Tools\UniqueId;
+use Tools\TimeStamp;
 
 class Contacts
 {
@@ -23,6 +24,8 @@ class Contacts
         $this->id = UniqueId::create32bitKey(
             UniqueId::BETANUMERIC
         );
+        $this->createdAt = TimeStamp::now();
+        $this->updatedAt = TimeStamp::now();
     }
 
 

@@ -31,6 +31,7 @@ class TenantAdapter
         $RocketDB->collection('users')->create();
         $RocketDB->collection('posts')->create();
         $RocketDB->collection('tasks')->create();
+        
     }
 
 }
