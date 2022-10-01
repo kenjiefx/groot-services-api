@@ -12,6 +12,7 @@ use User\Models\Permissions;
 class User {
 
     private string $id;
+    private string $tenantId;
     private string $firstName;
     private string $lastName;
     private string $email;
@@ -20,10 +21,10 @@ class User {
     private string $profilePhoto;
     private Status $status;
     private Permissions $permissions;
-    private Address $address;
+    private array $address;
     private TimeStamp $createdAt;
     private TimeStamp $updatedAt;
-    private Contacts $contacts;
+    private array $contacts;
 
 
     public function __construct(
@@ -47,6 +48,19 @@ class User {
                 $this->id : null;
         }
         $this->id = $id;
+        return $this;
+    }
+
+
+    public function tenantId (
+        ?string $tenantId = null
+        )
+    {
+        if(null===$tenantId){
+            return (isset($this->tenantId)) ?
+                $this->tenantId : null;
+        }
+        $this->tenantId = $tenantId;
         return $this;
     }
 
@@ -115,6 +129,7 @@ class User {
         return $this;
     }
 
+
     public function profilePhoto (
         ?string $profilePhoto = null
         )
@@ -155,7 +170,7 @@ class User {
 
 
     public function address (
-        ?Address $address = null
+        ?array $address = null
         )
     {
         if(null===$address){
@@ -194,7 +209,7 @@ class User {
 
 
     public function contacts (
-        ?Contacts $contacts = null
+        ?array $contacts = null
         )
     {
         if(null===$contacts){

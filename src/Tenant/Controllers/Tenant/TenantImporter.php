@@ -30,7 +30,7 @@ class TenantImporter
         $this->Tenant->updatedAt((new TimeStamp())->timeStamp($raw['updatedAt']));
         $this->Tenant->status(Status::$status());
         $this->Tenant->business((new BusinessImporter(new Business()))->import($raw['business']));
-        $this->Tenant->admin((new User()));
+        $this->Tenant->admin($raw['admin']);
         $this->Tenant->teammates($raw['teammates']);
         
         return $this->Tenant;

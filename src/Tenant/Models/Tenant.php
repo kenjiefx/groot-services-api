@@ -19,7 +19,7 @@ class Tenant {
     private TimeStamp $updatedAt;
     private Status $status;
     private Business $business;
-    private User $admin;
+    private string $admin;
     private array $teammates;
     private Settings $settings;
 
@@ -128,7 +128,7 @@ class Tenant {
 
 
     public function admin (
-        ?User $admin = null
+        ?string $admin = null
         )
     {
         if(null===$admin){
